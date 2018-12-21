@@ -26,8 +26,7 @@ if($select->num_rows === 1){  // checa se o login é valido
 
 	$id = hash('md5', $result['id']);
 	redirect("programa.php");
-}
-else{
+}else{
 	echo "<script type='text/javascript'>alert('Login ou senha incorretos. Tente Novamente.')</script>";
 	echo "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"0; URL=luigi.php \">";
 }
