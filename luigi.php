@@ -12,9 +12,9 @@
 <body>
 	<div>
 		<form method="post" action="valida.php">
-			<fieldset>
-				Nome: <input type="text" name="nome"><br>
-				Senha: <input type="password" name="senha">
+			<fieldset style="border: 0;">
+				Nome: <input type="text" name="nome" autocomplete="off"><br>
+				Senha: <input type="password" name="senha" autocomplete="off">
 				<input type="submit" value="Entrar"/>
 			</fieldset>
 		</form>
