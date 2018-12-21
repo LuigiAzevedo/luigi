@@ -1,9 +1,5 @@
 <?php
 	require_once("connect.php");
-
-	if(!$_GET['aviso'] == ""){
-		print "Login incorreto!<br>";
-	}
 ?>
 <!DOCTYPE html >
 <head>

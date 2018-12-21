@@ -20,11 +20,16 @@ function redirect($local){   // enviar o usuario para a pagina do parametro
 }
 
 if($select->num_rows === 1){  // checa se o login é valido
+	session_start();
+	$_SESSION['login'] = $_POST['nome'];
+	$_SESSION['senha'] = $_POST['senha'];
+
 	$id = hash('md5', $result['id']);
-	redirect('programa.php?id='.$id.'');  // caso seja valido é dado o prosseguimento
+	redirect("programa.php");
 }
 else{
-	redirect('luigi.php?aviso=1'); // caso seja invalido, volta-se para a tela de login
+	echo "<script type='text/javascript'>alert('Login ou senha incorretos. Tente Novamente.')</script>";
+	echo "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"0; URL=luigi.php \">";
 }
 $mysqli->close(); // fecha a conecxão
 ?>
