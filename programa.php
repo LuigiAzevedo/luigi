@@ -17,6 +17,7 @@ class Usuario{  // criação da classe usuario
   function __construct(){
     $this->idade = '21 anos';
     $this->cidade = 'Costa Verde';
+	$this->sexo = 'Masculino';
   }
   public function darNome($name){
     $this->nome = $name;
@@ -38,6 +39,13 @@ class Usuario{  // criação da classe usuario
     echo "&nbsp";
     //echo str_repeat("&nbsp;", 1);
   }
+  public function pegarSexo(){
+	  echo $this->sexo;
+	  $this->darEspaço();
+  }
+}
+function boasvindas($nome){
+  print("Ola $nome, bem vindo ao programa de teste 2019");
 }
 
 $select = $mysqli->query("SELECT nome FROM teste WHERE nome = '{$_SESSION['login']}'");
@@ -55,13 +63,21 @@ if($mysqli->error){
 
 boasvindas($_SESSION['login']);
 $user = new Usuario();
-$user->darNome('Jovem');
+$user->darNome('Luigi');
 
-function boasvindas($nome){
-  print("Ola $nome, bem vindo ao programa de teste 2019");
-}
+
 print '<br>';
+print 'Nome: ';
 $user->pegarNome();
+print '<br>';
+print 'Sexo: ';
+$user->pegarSexo();
+print '<br>';
+print 'Idade: ';
 $user->pegarIdade();
+print '<br>';
+print 'Cidade: ';
 $user->pegarCidade();
+
+
 ?>
