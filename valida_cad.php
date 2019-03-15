@@ -1,23 +1,22 @@
 <?php
 //mysqli_report(MYSQLI_REPORT_OFF);
 require_once("connect.php");
+$senha = hash('md5', $_POST['senha']);
 
-// Senha digitada pelo usuário (veio do formulário)
 $senha = $_POST['senha'];
+$custo = '08';
+$salt = 'Cf1f11ePArKlBJomM0F6aJ';
+// Gera um hash baseado em bcrypt
+$hash = crypt($senha, '$2a$' . $custo . '$' . $salt . '$');
 
-$select = $mysqli->query("SELECT nome, senha FROM teste WHERE nome ='{$_POST['nome']}'");
-$result = $select->fetch_assoc();
-
-$hash = $result['senha'];
-if (crypt($senha, $hash) === $hash) {
-	echo 'Senha OK!';
+$insert = "INSERT into teste(nome, senha) VALUES ('{$_POST['nome']}', '$hash')";
+if ($mysqli->query($insert) === TRUE) {
+    echo "New record created successfully";
 } else {
-	echo 'Senha incorreta!';
+    echo "Error: " . $insert . "<br>" . $mysqli->error;
 }
 
 /*
-$senha = hash('md5', $_POST['senha']);
-
 $select = $mysqli->query("SELECT id, nome, senha FROM teste WHERE nome ='{$_POST['nome']}' AND senha ='{$senha}'");
 $result = $select->fetch_assoc();
 
@@ -36,7 +35,6 @@ if($select->num_rows === 1){  // checa se o login é valido
 	echo "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"0; URL=luigi.php \">";
 	echo "<script type='text/javascript'>alert('Login ou senha incorretos. Tente Novamente.')</script>";
 }
-
 */
 $mysqli->close(); // fecha a conecxão
 ?>
