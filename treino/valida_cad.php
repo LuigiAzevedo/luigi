@@ -11,7 +11,7 @@ if (!empty($result)){
 }
 // recebe senha do formulário
 $senha = $_POST['senha'];
-// p'assa a senha como parâmetro para a classe Bcrypt
+// passa a senha como parâmetro para a classe Bcrypt
 $hash = Bcrypt::hash($senha);
 // insere no banco a nova senha e login cadastrado
 $insert = "INSERT into teste(nome, senha) VALUES ('{$_POST['nome']}', '$hash')";
