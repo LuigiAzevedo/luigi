@@ -12,7 +12,7 @@
 </head>
 <body>
 	<div>
-		<form method="post" action="valida.php">
+		<form method="post" action="valida_cad.php">
 			<fieldset style="border: 0;">
 				Nome: <input type="text" name="nome" autocomplete="off"><br>
 				Senha: <input type="password" name="senha" autocomplete="off">
