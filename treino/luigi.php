@@ -1,78 +1,157 @@
 <?php
-	require_once("connect.php");
-	
-						$meses = array(
-						1 => 'Janeiro',
-						2 => 'Fevereiro',
-						3 => 'Março',
-						4 => 'Abril',
-						5 => 'Maio',
-						6 => 'Junho',
-						7 => 'Julho',
-						8 => 'Agosto',
-						9 => 'Setembro',
-						10 => 'Outubro',
-						11 => 'Novembro',
-						12 => 'Dezembro'
-					);
-					
-					echo $meses[2];
-?>
-<!DOCTYPE html >
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=yes">
-	<meta name="description" content="Teste em PHP 7.2">
-	<meta name="author" content="Luigi Azevedo">
-</head>
-<body>
-	<div>
-		<form method="post" action="valida.php">
-			<fieldset style="border: 0;">
-				Nome: <input type="text" name="nome" autocomplete="off"><br>
-				Senha: <input type="password" name="senha" autocomplete="off">
-				<input type="submit" value="Entrar"/>
-			</fieldset>
-		</form>
-</body>
-</html>
 
+	class DI {
+    
+	    private static $map;
+	    
+	    private static function addToMap($key, $obj) {
+	        if(self::$map === null) {
+	            self::$map = (object) array();
+	        }
+	        self::$map->$key = $obj;
+	    }
+	    public static function mapValue($key, $value) {
+	        self::addToMap($key, (object) array(
+	            "value" => $value,
+	            "type" => "value"
+	        ));
+	    }
+	    public static function mapClass($key, $value, $arguments = null) {
+	        self::addToMap($key, (object) array(
+	            "value" => $value,
+	            "type" => "class",
+	            "arguments" => $arguments
+	        ));
+	    }
+	    public static function mapClassAsSingleton($key, $value, $arguments = null) {
+	        self::addToMap($key, (object) array(
+	            "value" => $value,
+	            "type" => "classSingleton",
+	            "instance" => null,
+	            "arguments" => $arguments
+	        ));
+	    }
 
-<!--
-
-
-
-	$select = $mysqli->query("SELECT * FROM teste");
-	printf("Select returned %d rows.\n",$select->num_rows);
-
-
-	while ($row = $select->fetch_assoc()){
-		echo 	'<table>
-					<tr>
-						<td>'.$row['nome'].'</td>
-						<td>'.$row['senha'].'<td>
-					</tr>
-				</table>';
-
+	    public static function getInstanceOf($className, $arguments = null) {
+	        
+		    // checking if the class exists
+		    if(!class_exists($className)) {
+		        throw new Exception("DI: missing class '".$className."'.");
+		    }
+		    
+		    // initialized the ReflectionClass
+		    $reflection = new ReflectionClass($className);
+		    
+		    // creating an instance of the class
+		    if($arguments === null || count($arguments) == 0) {
+		       $obj = new $className;
+		    } else {
+		        if(!is_array($arguments)) {
+		            $arguments = array($arguments);
+		        }
+		       $obj = $reflection->newInstanceArgs($arguments);
+		    }
+		    
+		    // injecting
+		    if($doc = $reflection->getDocComment()) {
+		        $lines = explode("\n", $doc);
+		        foreach($lines as $line) {
+		            if(count($parts = explode("@Inject", $line)) > 1) {
+		                $parts = explode(" ", $parts[1]);
+		                if(count($parts) > 1) {
+		                    $key = $parts[1];
+		                    $key = str_replace("\n", "", $key);
+		                    $key = str_replace("\r", "", $key);
+		                    if(isset(self::$map->$key)) {
+		                        switch(self::$map->$key->type) {
+		                            case "value":
+		                                $obj->$key = self::$map->$key->value;
+		                            break;
+		                            case "class":
+		                                $obj->$key = self::getInstanceOf(self::$map->$key->value, self::$map->$key->arguments);
+		                            break;
+		                            case "classSingleton":
+		                                if(self::$map->$key->instance === null) {
+		                                    $obj->$key = self::$map->$key->instance = self::getInstanceOf(self::$map->$key->value, self::$map->$key->arguments);
+		                                } else {
+		                                    $obj->$key = self::$map->$key->instance;
+		                                }
+		                            break;
+		                        }
+		                    }
+		                }
+		            }
+		        }
+	  		}
+	    
+	    	// return the created instance
+	   		 return $obj;
+    
+		}
+    
 	}
-	<script>
-		window.onbeforeunload = closingCode;
-		function closingCode(){
-			<?php
-		//		$senha = hash('md5', 'senha');
-		//		$nome = 'Luigi';
-		//		$query = $mysqli->query("INSERT INTO teste (nome, senha) VALUES('$nome', '$senha')");
-		//		$mysqli->query($query);
-			?>
-		return null;
-	</script>
 
+	class View {
+	    public function show($str) {
+	        echo "<p>".$str."</p>";
+	    }
+	}
 
-	$delete = $mysqli->query("DELETE FROM teste");
-	echo '<form action="envia.php">
-		<input type="submit" value="ENVIA"/>
-	</form>';
+	class UsersModel {
+	    public function get() {
+	        return array(
+	            (object) array("firstName" => "Luigi", "lastName" => "Azevedo")
+	        );
+	    }
+	}
 
-	$mysqli->close();
--->
+	/**
+	* @Inject view
+	*/
+	class Navigation {
+	    public function show() {
+	        $this->view->show('
+	            <a href="#" title="Home">Home</a> | 
+	            <a href="#" title="Home">Produtos</a> | 
+	            <a href="#" title="Home">Contato</a>
+	        ');
+	    }
+	}
+
+	/**
+	* @Inject usersModel
+	* @Inject view
+	*/
+	class Content {
+	    private $title;
+	    public function __construct($title) {
+	        $this->title = $title;
+	    }
+	    public function show() {  
+	        $this->users = $this->usersModel->get();
+	        $this->view->show($this->title);
+	        foreach($this->users as $user) {
+	            $this->view->show($user->firstName." ".$user->lastName);
+	        }
+	    }
+	}
+
+	/**
+	* @Inject navigation
+	* @Inject content
+	*/
+	class PageController {
+	    public function show() {
+	        $this->navigation->show();
+	        $this->content->show();
+	    }
+	}
+
+	DI::mapClass("navigation", "Navigation");
+	DI::mapClass("content", "Content", array("Título do conteudo"));
+	DI::mapClass("view", "View");
+	DI::mapClassAsSingleton("usersModel", "UsersModel");
+
+	$page = DI::getInstanceOf("PageController");
+	$page->show();
+?>
